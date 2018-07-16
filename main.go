@@ -1,6 +1,11 @@
 package main
 
-import "flag"
+import (
+	"flag"
+	"log"
+
+	"github.com/Azareal/bqcss2js/parse"
+)
 
 // TODO: Support directories as origins
 func main() {
@@ -10,6 +15,10 @@ func main() {
 
 	originFile := *originFilePtr
 	destFile := *destFilePtr
-	_ = originFile
 	_ = destFile
+
+	err := parse.ParseFile(originFile)
+	if err != nil {
+		log.Fatal(err)
+	}
 }
