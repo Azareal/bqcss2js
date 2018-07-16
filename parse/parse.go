@@ -2,6 +2,7 @@ package parse
 
 import (
 	"io/ioutil"
+	"log"
 	"strings"
 )
 
@@ -52,19 +53,25 @@ func ParseBytes(data []byte) (queries []*Query, err error) {
 					i = skipCharsUntil(i, ")", dataRunes)
 					i--
 				} else if char == ' ' && peekMatch(i, " and (", dataRunes) {
-					query.Selector = string(dataRunes[initialI:i])
+					query.Selector = strings.TrimSpace(string(dataRunes[initialI:i]))
 					i += 6
 					// TODO: We could support multiple media rules, but let's keep it simple for now
 					startDelim := i
 					i = skipCharsUntil(i, ")", dataRunes)
-					query.MediaRules = string(dataRunes[startDelim:i])
+					query.MediaRules = strings.TrimSpace(string(dataRunes[startDelim:i]))
 					break
 				} else if char == '(' || char == '{' {
-					query.Selector = string(dataRunes[initialI:i])
+					query.Selector = strings.TrimSpace(string(dataRunes[initialI:i]))
 					break
 				}
 			}
 			if i < len(dataRunes) {
+				var ok bool
+				i, ok = tryStepForward(i, 1, dataRunes)
+				if !ok {
+					continue
+				}
+
 				initialI := i
 				braceCount := 1
 				for ; i < len(dataRunes); i++ {
@@ -79,9 +86,13 @@ func ParseBytes(data []byte) (queries []*Query, err error) {
 						break
 					}
 				}
-				query.Body = string(dataRunes[initialI:i])
+				query.Body = strings.TrimSpace(string(dataRunes[initialI:i]))
+
+				if query.Selector != "" && query.Body != "" {
+					log.Print("adding query: ", query)
+					queries = append(queries, query)
+				}
 			}
-			queries = append(queries, query)
 		}
 	}
 	return queries, nil
@@ -109,18 +120,15 @@ func skipCharsUntil(i int, until string, dataRunes []rune) (newI int) {
 	return i
 }
 
-type Query struct {
-	Selector   string
-	MediaRules string
-	Body       string
-}
-
 // TODO: Test this
 func peekMatch(cur int, phrase string, runes []rune) bool {
 	if cur+len(phrase) > len(runes) {
 		return false
 	}
 	for i, char := range phrase {
+		if cur+i+1 >= len(runes) {
+			return false
+		}
 		if runes[cur+i+1] != char {
 			return false
 		}
