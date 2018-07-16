@@ -17,7 +17,7 @@ func main() {
 	destFile := *destFilePtr
 	_ = destFile
 
-	err := parse.ParseFile(originFile)
+	_, err := parse.ParseFile(originFile)
 	if err != nil {
 		log.Fatal(err)
 	}
