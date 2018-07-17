@@ -89,7 +89,7 @@ func ParseBytes(data []byte) (queries []*Query, err error) {
 				query.Body = strings.TrimSpace(string(dataRunes[initialI:i]))
 
 				if query.Selector != "" && query.Body != "" {
-					log.Print("adding query: ", query)
+					log.Printf("adding query: %+v\n", query)
 					queries = append(queries, query)
 				}
 			}

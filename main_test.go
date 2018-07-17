@@ -61,4 +61,12 @@ func TestParse(t *testing.T) {
 	queries, err = parse.ParseBytes([]byte("@element .hi {...}"))
 	failOnErr(t, err)
 	expect(t, len(queries) == 1, "The AST should have one query")
+
+	queries, err = parse.ParseBytes([]byte(`@element .hi {
+	.row {
+		background-color: red;
+	}
+}`))
+	failOnErr(t, err)
+	expect(t, len(queries) == 1, "The AST should have one query")
 }
